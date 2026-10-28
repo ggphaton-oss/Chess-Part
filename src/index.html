@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chess Park</title>
+<script src="chess.js"></script>
+<style>
+:root{--bg:#050d07;--card:#0f1d13;--ink:#f1ead2;--mut:#9fae8f;--amb:#f5b301;--red:#c8102e;--line:#27402c;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:15px/1.45 'Trebuchet MS',Verdana,sans-serif;min-height:100vh;background:radial-gradient(ellipse at 50% -10%,#1d4a2a 0,#0a1c10 45%,#050d07 80%)}
+.wrap{max-width:1040px;margin:0 auto;padding:14px}
+.logo{text-align:center;margin:8px 0 14px}
+.logo h1{margin:0;font:900 30px/1 Impact,'Arial Black',sans-serif;letter-spacing:.12em;color:var(--amb);text-shadow:0 2px 0 #7a1010,0 0 18px #f5b30055}
+.logo div{color:var(--mut);letter-spacing:.3em;font-size:11px;margin-top:6px;text-transform:uppercase}
+.card{background:linear-gradient(160deg,#142a1a,var(--card));border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 8px 28px #000a}
+textarea{width:100%;height:110px;background:#050d07;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px ui-monospace,Menlo,monospace}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+button,select{background:#173020;color:var(--ink);border:1px solid #3d6a47;border-radius:8px;padding:9px 14px;font:inherit;cursor:pointer}
+button.pri{background:linear-gradient(#ffd24a,var(--amb));color:#1b1200;font-weight:800;border:0;box-shadow:0 3px 0 #8a6200}
+button:disabled{opacity:.5}
+label{color:var(--mut);font-size:13px}input[type=range]{accent-color:var(--amb)}
+.grid{display:grid;grid-template-columns:minmax(0,600px) 1fr;gap:14px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.pl{display:flex;align-items:center;gap:8px;padding:4px 2px;font-weight:700}
+.pc{width:14px;height:14px;border-radius:3px;border:1px solid #fff8;flex:none}
+.bwrap{display:flex;gap:8px}
+.evbar{width:20px;border-radius:5px;background:#0b0b0b;border:1px solid #3d6a47;position:relative;overflow:hidden;flex:none}
+.evfill{position:absolute;left:0;right:0;bottom:0;background:#f4efdc;transition:height .3s}
+.frame{flex:1;min-width:0;padding:9px;border-radius:6px;background:repeating-linear-gradient(45deg,#f5b301 0 12px,#141414 12px 24px);box-shadow:0 10px 30px #000b}
+.bw{container-type:inline-size;overflow:hidden;position:relative;width:100%;aspect-ratio:1/1;border:3px solid #141414}
+.board{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr))}
+.sq{position:relative;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;font-size:9.6cqw;line-height:1}
+.l{background:linear-gradient(135deg,#e6d3a3,#cdb67e)}.d{background:linear-gradient(135deg,#3b7048,#2a5435)}
+.sq.hl::before{content:"";position:absolute;inset:0;background:#f5b30088}
+.sq .c{position:absolute;font:700 1.9cqw sans-serif;opacity:.7;z-index:1}
+.bdg{position:absolute;top:2%;right:2%;z-index:4;min-width:3.6cqw;height:3.6cqw;padding:0 .6cqw;border-radius:99px;font:800 2.1cqw/3.6cqw sans-serif;text-align:center;color:#fff;box-shadow:0 1px 3px #000a}
+.p{position:relative;z-index:3;font-family:'Segoe UI Symbol','Noto Sans Symbols 2','DejaVu Sans',serif;font-variant-emoji:text}
+.pw{color:#fff3cf;text-shadow:0 0 1px #000,0 0 2px #000,1px 2px 3px #000c}
+.pb{color:#0a0f0a;text-shadow:0 0 1px #ffd24a,0 0 3px #ffd24acc,1px 2px 3px #000c}
+#arr{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.gh{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;pointer-events:none}
+.ctl{display:flex;justify-content:center;gap:6px;margin-top:8px}.ctl button{min-width:50px;font-size:18px}
+.coach{display:flex;gap:10px;align-items:center;background:#0b170e;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;min-height:62px}
+.ic{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 5px;border-radius:99px;color:#fff;font:800 12px sans-serif;box-shadow:0 1px 3px #0009;flex:none}
+.ic.sm{min-width:17px;height:17px;font-size:9px;padding:0 3px;margin-right:5px}
+.acc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:#f4efdc;color:#16200f;border-radius:10px;padding:8px 10px;text-align:center}
+.tile b{font-size:26px;display:block;line-height:1.1}.tile span{font-size:12px}
+.sec{font:900 14px Impact,'Arial Black',sans-serif;letter-spacing:.1em;color:var(--amb);margin:0 0 8px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:5px 4px;border-bottom:1px solid var(--line);text-align:center}td:first-child{text-align:left}th{color:var(--mut);font-weight:400}
+.rate{display:flex;justify-content:space-around;margin:10px 0;font-size:12px;color:var(--mut);text-align:center}.rate b{display:block;font-size:22px;color:var(--ink)}
+.moves{max-height:260px;overflow:auto;display:grid;grid-template-columns:30px 1fr 1fr;gap:2px 6px;font-size:14px}
+.mv{display:flex;align-items:center;padding:3px 6px;border-radius:6px;cursor:pointer}.mv:hover{background:#ffffff14}.mv.on{background:#f5b30033;outline:1px solid var(--amb)}
+.num{color:var(--mut);padding-top:4px}
+.big{font-size:30px}.note{color:var(--mut);font-size:12.5px}
+.prog{height:8px;background:#050d07;border-radius:6px;overflow:hidden;margin-top:10px}.prog i{display:block;height:100%;width:0;background:repeating-linear-gradient(45deg,#f5b301 0 8px,#141414 8px 16px)}
+#graph{width:100%;height:110px;background:#050d07;border-radius:8px;cursor:pointer}
+.hide{display:none}
+</style></head><body><div class="wrap">
+<div class="logo"><h1>🦖 CHESS PARK</h1><div>Game Review · Isla Nublar Analysis Lab</div></div>
+<div class="card" id="setup">
+<textarea id="pgn" placeholder="Paste your PGN here (or upload a .pgn file)…"></textarea>
+<div class="row"><button class="pri" id="go">Start review</button><button id="sample">Load sample</button><button id="up">Upload .pgn</button><input type="file" id="file" accept=".pgn,.txt" class="hide"></div>
+<div class="row"><label>Engine <select id="eng"><option value="sf">Stockfish 19 (offline)</option><option value="mini">Built‑in lite engine</option></select></label>
+<label>Depth <input type="range" id="depth" min="6" max="22" value="12"> <b id="dv">12</b></label></div>
+<div class="note" id="engnote">Notation is read as PGN text. Screenshots of scoresheets can’t be read here—paste the moves as text.</div>
+<div class="prog hide" id="pbar"><i></i></div><div class="note" id="pstat"></div>
+</div>
+<div id="result" class="hide"><div class="grid">
+<div class="card">
+ <div class="pl" id="top"></div>
+ <div class="bwrap"><div class="evbar"><div class="evfill" id="ev"></div></div>
+ <div class="frame"><div class="bw"><div class="board" id="board"></div><svg id="arr" viewBox="0 0 8 8"></svg></div></div></div>
+ <div class="pl" id="bot"></div>
+ <div class="ctl"><button data-n="s">⏮</button><button data-n="p">◀</button><button data-n="n">▶</button><button data-n="e">⏭</button><button id="flip">⇅</button></div>
+ <div class="coach" id="info"></div>
+</div>
+<div>
+ <div class="card"><p class="sec">Game Review</p><div id="sumry"></div></div>
+ <div class="card"><p class="sec">Moves</p><div class="moves" id="mlist"></div></div>
+</div></div>
+<div class="card"><p class="sec">Evaluation</p><svg id="graph" viewBox="0 0 600 110" preserveAspectRatio="none"></svg></div>
+<div class="card" id="report"></div>
+</div></div>
+<script>
+const $=id=>document.getElementById(id);
+const SAMPLE='[White "Paul Morphy"]\n[Black "Duke of Brunswick & Count Isouard"]\n[Result "1-0"]\n\n1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8# 1-0';
+$('sample').onclick=()=>$('pgn').value=SAMPLE;
+$('up').onclick=()=>$('file').click();
+$('file').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(t=>$('pgn').value=t)};
+$('depth').oninput=e=>$('dv').textContent=e.target.value;
+const G={sym:{k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'}};
+let S=null,ply=0,flip=false,sf=null;
+
+/* ---------- engines ---------- */
+function initSF(){return new Promise(res=>{try{
+ sf=new Worker('engine/__SF_JS__');
+ const t=setTimeout(()=>res(false),12000);
+ sf.onerror=()=>{clearTimeout(t);res(false)};
+ sf.onmessage=e=>{if(String(e.data).indexOf('uciok')>=0){clearTimeout(t);sf.onmessage=null;res(true)}};
+ sf.postMessage('uci');}catch(x){res(false)}})}
+function sfAnalyze(fen,depth){return new Promise(res=>{
+ let cp=0,mate=null;
+ const to=setTimeout(()=>sf.postMessage('stop'),25000);
+ sf.onmessage=e=>{const l=String(e.data);
+  if(l.startsWith('info')&&l.includes(' score ')){let m=l.match(/score cp (-?\d+)/);if(m){cp=+m[1];mate=null}
+   m=l.match(/score mate (-?\d+)/);if(m){mate=+m[1]}}
+  if(l.startsWith('bestmove')){clearTimeout(to);const best=l.split(' ')[1];
+   res({cp:mate!==null?(mate>0?1000:-1000):Math.max(-1000,Math.min(1000,cp)),best})}};
+ sf.postMessage('position fen '+fen);sf.postMessage('go depth '+depth);})}
+const VAL={p:100,n:320,b:330,r:500,q:900,k:0};
+function evalPos(c){let s=0;const b=c.board();
+ for(let r=0;r<8;r++)for(let f=0;f<8;f++){const p=b[r][f];if(!p)continue;
+  const cen=3.5-Math.max(Math.abs(r-3.5),Math.abs(f-3.5));
+  let v=VAL[p.type]+(p.type==='p'?(p.color==='w'?(6-r):(r-1))*6:cen*(p.type==='k'?0:6));
+  s+=p.color==='w'?v:-v}
+ return c.turn()==='w'?s:-s}
+function negamax(c,d,a,b){
+ if(c.in_checkmate())return -9000-d;if(c.in_draw())return 0;if(d===0)return evalPos(c);
+ const mv=c.moves({verbose:true}).sort((x,y)=>(y.captured?VAL[y.captured]*10-VAL[y.piece]:0)-(x.captured?VAL[x.captured]*10-VAL[x.piece]:0));
+ for(const m of mv){c.move(m);const v=-negamax(c,d-1,-b,-a);c.undo();if(v>=b)return b;if(v>a)a=v}
+ return a}
+function miniAnalyze(fen){return new Promise(res=>setTimeout(()=>{
+ const c=new Chess(fen);let best=null,ba=-1e9;
+ for(const m of c.moves({verbose:true})){c.move(m);const v=-negamax(c,2,-1e9,1e9);c.undo();if(v>ba){ba=v;best=m.from+m.to+(m.promotion||'')}}
+ res({cp:Math.max(-1000,Math.min(1000,ba)),best})},0))}
+
+/* ---------- analysis ---------- */
+const CL={Brilliant:['#26c9c3','!!'],Great:['#5c8bb0','!'],Best:['#81b64c','★'],Excellent:['#96bc4b','✓'],Good:['#8fa57a','•'],Inaccuracy:['#f7c631','?!'],Mistake:['#e58f2a','?'],Blunder:['#ca3431','??']};
+const ico=(k,sm)=>'<span class="ic'+(sm?' sm':'')+'" style="background:'+CL[k][0]+'">'+CL[k][1]+'</span>';
+const wp=cp=>50+50*(2/(1+Math.exp(-0.00368208*cp))-1);
+$('go').onclick=async()=>{
+ const text=$('pgn').value.trim();if(!text){$('pstat').textContent='Please paste a PGN first.';return}
+ const g=new Chess();if(!g.load_pgn(text,{sloppy:true})){$('pstat').textContent='That PGN could not be read. Check the move text.';return}
+ const hist=g.history({verbose:true});if(!hist.length){$('pstat').textContent='No moves found.';return}
+ const hd=g.header(),start=hd.FEN||undefined;
+ $('go').disabled=true;$('pbar').classList.remove('hide');
+ let useSF=$('eng').value==='sf',depth=+$('depth').value;
+ if(useSF){$('pstat').textContent='Powering up the fences (Stockfish)…';if(!await initSF()){useSF=false;$('engnote').textContent='Stockfish could not start, so the built‑in lite engine was used (less accurate).'}}
+ const rep=new Chess(start),fens=[rep.fen()];for(const m of hist){rep.move(m);fens.push(rep.fen())}
+ const ev=[],bests=[];
+ for(let i=0;i<fens.length;i++){
+  const c=new Chess(fens[i]);let r;
+  if(c.in_checkmate())r={cp:-1000,best:null};else if(c.in_draw()||!c.moves().length)r={cp:0,best:null};
+  else r=useSF?await sfAnalyze(fens[i],depth):await miniAnalyze(fens[i]);
+  ev.push(c.turn()==='w'?r.cp:-r.cp);bests.push(r.best);
+  $('pbar').firstElementChild.style.width=((i+1)/fens.length*100)+'%';$('pstat').textContent='Scanning position '+(i+1)+' of '+fens.length+'…';
+ }
+ const mv=hist.map((m,i)=>{
+  const sg=m.color==='w'?1:-1,b=ev[i]*sg,a=ev[i+1]*sg;let loss=Math.max(0,b-a);
+  if((b>600&&a>500)||(b<-600&&a<-500))loss=Math.min(loss,20);
+  const uci=m.from+m.to+(m.promotion||''),isB=uci===bests[i];
+  const acc=Math.max(0,Math.min(100,103.1668*Math.exp(-0.04354*Math.max(0,wp(b)-wp(a)))-3.1669));
+  let sac=false;if('nbrq'.includes(m.piece)){sac=new Chess(fens[i+1]).moves({verbose:true}).some(x=>x.to===m.to&&x.captured)&&VAL[m.piece]-(m.captured?VAL[m.captured]:0)>=200}
+  const gain=i>0?b-ev[i-1]*sg:0;
+  const cls=(loss<=15&&sac&&b<400&&a>-150&&(isB||loss<=8))?'Brilliant':(isB&&gain>=150)?'Great':(isB||loss<=5)?'Best':loss<=25?'Excellent':loss<=60?'Good':loss<=120?'Inaccuracy':loss<=280?'Mistake':'Blunder';
+  let bsan='';if(bests[i]){const t=new Chess(fens[i]);const x=t.move({from:bests[i].slice(0,2),to:bests[i].slice(2,4),promotion:bests[i][4]});bsan=x?x.san:''}
+  return{m,loss,acc,cls,bsan,bu:bests[i],isB,color:m.color,b,a}});
+ S={hd,fens,ev,mv,engine:useSF?'Stockfish depth '+depth:'Built‑in lite engine'};ply=0;
+ $('go').disabled=false;$('pbar').classList.add('hide');$('pstat').textContent='';
+ $('result').classList.remove('hide');report();show(0);$('result').scrollIntoView({behavior:'smooth'});
+};
+const fmt=e=>e>=900?'M+':e<=-900?'M−':(e>0?'+':'')+(e/100).toFixed(2);
+function show(p){const old=ply;ply=Math.max(0,Math.min(S.mv.length,p));
+ const c=new Chess(S.fens[ply]),b=c.board(),last=ply?S.mv[ply-1]:null,lm=last&&last.m;let h='';
+ for(let ri=0;ri<8;ri++)for(let fi=0;fi<8;fi++){
+  const r=flip?7-ri:ri,f=flip?7-fi:fi,sq='abcdefgh'[f]+(8-r),pc=b[r][f],dk=(r+f)%2;
+  const tc='style="color:'+(dk?'#cfe3c6':'#3b7048')+'"';
+  h+='<div class="sq '+(dk?'d':'l')+(lm&&(sq===lm.from||sq===lm.to)?' hl':'')+'" data-sq="'+sq+'">'+(fi===0?'<span class="c" '+tc+' style="left:3%;top:2%">'+(8-r)+'</span>':'')+(ri===7?'<span class="c" '+tc+' style="right:3%;bottom:1%">'+'abcdefgh'[f]+'</span>':'')+(pc?'<span class="p '+(pc.color==='w'?'pw':'pb')+'">'+G.sym[pc.type]+'\uFE0E</span>':'')+(lm&&sq===lm.to?'<span class="bdg" style="background:'+CL[last.cls][0]+'">'+CL[last.cls][1]+'</span>':'')+'</div>'}
+ $('board').innerHTML=h;
+ if(ply-old===1)anim(S.mv[ply-1].m,0);else if(old-ply===1)anim(S.mv[old-1].m,1);
+ let ar='';
+ if(last&&last.bu&&!last.isB){const P=s=>{const f='abcdefgh'.indexOf(s[0]),r=8-s[1];return[(flip?7-f:f)+.5,(flip?7-r:r)+.5]};
+  const[x1,y1]=P(last.bu.slice(0,2)),[x2,y2]=P(last.bu.slice(2,4)),dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,bx=x2-ux*.38,by=y2-uy*.38;
+  ar='<line x1="'+x1+'" y1="'+y1+'" x2="'+bx+'" y2="'+by+'" stroke="#81b64c" stroke-width=".17" stroke-linecap="round" opacity=".9"/><polygon points="'+x2+','+y2+' '+(bx-uy*.22)+','+(by+ux*.22)+' '+(bx+uy*.22)+','+(by-ux*.22)+'" fill="#81b64c" opacity=".9"/>'}
+ $('arr').innerHTML=ar;
+ const e=S.ev[ply];$('ev').style.height=wp(e)+'%';
+ let i;
+ if(last){const nm=Math.ceil(ply/2)+(last.color==='w'?'. ':'… ')+lm.san;
+  const msg={Brilliant:'is a brilliant move!',Great:'is a great move',Best:'is the best move',Excellent:'is excellent',Good:'is a good move',Inaccuracy:'is an inaccuracy',Mistake:'is a mistake',Blunder:'is a blunder'}[last.cls];
+  i=ico(last.cls)+'<div><b>'+nm+' '+msg+'</b><br><span class="note">'+(last.isB||!last.bsan?'Eval '+fmt(e):'Best was '+last.bsan+' · Eval '+fmt(e)+' · lost '+(last.loss/100).toFixed(1)+' pawns')+'</span></div>'}
+ else i='<span style="font-size:24px">🦕</span><div><b>Starting position</b><br><span class="note">Step through the game with ▶ or the arrow keys.</span></div>';
+ $('info').innerHTML=i;
+ document.querySelectorAll('#mlist .mv').forEach(el=>el.classList.toggle('on',+el.dataset.p===ply));
+ const on=document.querySelector('#mlist .mv.on');if(on)on.scrollIntoView({block:'nearest'});
+ pbars();drawGraph();
+}
+function anim(m,rev){
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const q=s=>document.querySelector('[data-sq="'+s+'"]');
+ const slide=(f,t)=>{const A=q(f),B=q(t),a=B&&B.querySelector('.p');if(!A||!a)return;
+  a.style.zIndex=6;a.animate([{transform:'translate('+(A.offsetLeft-B.offsetLeft)+'px,'+(A.offsetTop-B.offsetTop)+'px) scale(1.12)'},{transform:'none'}],{duration:300,easing:'cubic-bezier(.22,.8,.25,1)'}).onfinish=()=>a.style.zIndex=''};
+ if(!rev){slide(m.from,m.to);
+  if(m.captured&&m.flags.indexOf('e')<0){const B=q(m.to),g=document.createElement('div');g.className='gh';
+   g.innerHTML='<span class="p '+(m.color==='w'?'pb':'pw')+'">'+G.sym[m.captured]+'\uFE0E</span>';B.appendChild(g);
+   g.animate([{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(.45) rotate(25deg)'}],{duration:320,delay:110,fill:'both'}).onfinish=()=>g.remove()}}
+ else{slide(m.to,m.from);
+  if(m.captured&&m.flags.indexOf('e')<0){const c=q(m.to).querySelector('.p');if(c)c.animate([{opacity:0,transform:'scale(.45)'},{opacity:1,transform:'none'}],{duration:320,delay:120,fill:'backwards'})}}
+ if(m.flags.indexOf('k')>=0||m.flags.indexOf('q')>=0){const r=m.to[1],k=m.flags.indexOf('k')>=0;
+  const rf=(k?'h':'a')+r,rt=(k?'f':'d')+r;rev?slide(rt,rf):slide(rf,rt)}
+}
+function pbars(){const hd=S.hd,pn=c=>(c==='w'?hd.White:hd.Black)||(c==='w'?'White':'Black'),el=c=>c==='w'?hd.WhiteElo:hd.BlackElo;
+ const row=c=>'<span class="pc" style="background:'+(c==='w'?'#fff3cf':'#0a0f0a')+'"></span>'+pn(c)+(el(c)?' <span class="note">('+el(c)+')</span>':'');
+ $('top').innerHTML=row(flip?'w':'b');$('bot').innerHTML=row(flip?'b':'w')}
+function drawGraph(){const n=S.ev.length,W=600,H=110,x=ply/(n-1||1)*W;
+ const pts=S.ev.map((e,i)=>(i/(n-1||1)*W)+','+(H/2-Math.max(-500,Math.min(500,e))/500*(H/2-4)));
+ $('graph').innerHTML='<rect x="0" y="55" width="600" height="55" fill="#2a2a2a"/><polygon points="0,55 '+pts.join(' ')+' 600,55" fill="#f4efdc" opacity=".55"/><polyline points="'+pts.join(' ')+'" fill="none" stroke="#f5b301" stroke-width="2"/><line x1="'+x+'" x2="'+x+'" y1="0" y2="110" stroke="#c8102e" stroke-width="2"/>'}
+$('graph').onclick=e=>{const r=$('graph').getBoundingClientRect();show(Math.round((e.clientX-r.left)/r.width*(S.ev.length-1)))};
+function report(){
+ const side=c=>{const a=S.mv.filter(x=>x.color===c);if(!a.length)return null;
+  const acpl=a.reduce((s,x)=>s+x.loss,0)/a.length,acc=a.reduce((s,x)=>s+x.acc,0)/a.length,cnt={};
+  Object.keys(CL).forEach(k=>cnt[k]=a.filter(x=>x.cls===k).length);
+  return{acpl,acc,cnt,elo:Math.round(Math.max(400,Math.min(2900,2900*Math.exp(-0.02*acpl)))/10)*10}};
+ const W=side('w'),B=side('b'),hd=S.hd,nm=(c,d)=>(c==='w'?hd.White:hd.Black)||d;
+ const tile=(s,n)=>'<div class="tile"><span>'+n+'</span><b>'+(s?s.acc.toFixed(1):'–')+'</b><span>Accuracy</span></div>';
+ $('sumry').innerHTML='<div class="acc">'+tile(W,nm('w','White'))+tile(B,nm('b','Black'))+'</div>'+
+ '<div class="rate"><div>Game rating<b>'+(W?W.elo:'–')+'</b></div><div>Game rating<b>'+(B?B.elo:'–')+'</b></div></div>'+
+ '<table>'+Object.keys(CL).map(k=>'<tr><td>'+ico(k,1)+k+'</td><td style="color:'+CL[k][0]+'">'+(W?W.cnt[k]:'–')+'</td><td style="color:'+CL[k][0]+'">'+(B?B.cnt[k]:'–')+'</td></tr>').join('')+'</table>';
+ let m='';S.mv.forEach((x,i)=>{if(x.color==='w'||i===0)m+='<div class="num">'+Math.ceil((i+1)/2)+'.</div>';if(i===0&&x.color==='b')m+='<div></div>';
+  m+='<div class="mv" data-p="'+(i+1)+'">'+ico(x.cls,1)+x.m.san+'</div>'});
+ $('mlist').innerHTML=m;
+ const worst=S.mv.map((x,i)=>({...x,i})).sort((a,b)=>b.loss-a.loss).slice(0,3).filter(x=>x.loss>60);
+ $('report').innerHTML='<p class="sec">Key moments</p>'+(worst.length?worst.map(x=>'<div class="mv" data-p="'+(x.i+1)+'">'+ico(x.cls,1)+Math.ceil((x.i+1)/2)+(x.color==='w'?'. ':'… ')+x.m.san+'&nbsp;<span class="note">— lost '+(x.loss/100).toFixed(1)+' pawns'+(x.bsan?', best was '+x.bsan:'')+'</span></div>').join(''):'<p>No major errors found — a clean game.</p>')+
+ '<p class="note">Engine: '+S.engine+'. Game rating is a rough estimate from average centipawn loss in this single game; treat it as a guide, not an official rating.</p>';
+ document.querySelectorAll('.mv[data-p]').forEach(el=>el.onclick=()=>{show(+el.dataset.p);if(el.closest('#report'))scrollTo({top:0,behavior:'smooth'})});
+}
+document.querySelectorAll('.ctl button[data-n]').forEach(b=>b.onclick=()=>{const k=b.dataset.n;show(k==='s'?0:k==='e'?S.mv.length:k==='p'?ply-1:ply+1)});
+$('flip').onclick=()=>{flip=!flip;show(ply)};
+document.addEventListener('keydown',e=>{if(!S||e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowLeft')show(ply-1);if(e.key==='ArrowRight')show(ply+1)});
+</script></body></html>
